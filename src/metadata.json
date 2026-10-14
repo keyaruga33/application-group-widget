@@ -1,0 +1,23 @@
+{
+  "KPlugin": {
+    "Authors": [
+      {
+        "Name": "Keyaruga",
+        "Email": "keyaruga999@gmail,com"
+      }
+    ],
+    "Category": "Utilities",
+    "Description": "Group applications, desktop entries, folders and files on your desktop or panel",
+    "Description[fa]": "گروه‌بندی برنامه‌ها، فایل‌های دسکتاپ، پوشه‌ها و اسناد در دسکتاپ یا پنل",
+    "Icon": "com.keyaruga.applicationgroup",
+    "Id": "com.keyaruga.applicationgroup",
+    "License": "GPL-3.0",
+    "Name": "Application Group",
+    "Name[fa]": "گروه برنامه‌ها",
+    "Version": "1.0.2",
+    "Website": "https://github.com/keyaruga33/application-group-widget",
+    "BugReportUrl": "https://github.com/keyaruga33/application-group-widget/issues"
+  },
+  "X-Plasma-API-Minimum-Version": "6.0",
+  "KPackageStructure": "Plasma/Applet"
+}

@@ -1,0 +1,6 @@
+dist/
+*.zip
+.idea/
+.vscode/
+*.swp
+*~

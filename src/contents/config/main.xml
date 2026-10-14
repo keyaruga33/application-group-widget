@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+
+  <kcfgfile name=""/>
+
+  <group name="General">
+    <entry name="items" type="String">
+      <default>[{"id":"app-dolphin","title":"Dolphin","icon":"system-file-manager","url":"file:///usr/share/applications/org.kde.dolphin.desktop","type":"application","launchCount":0},{"id":"app-konsole","title":"Konsole","icon":"utilities-terminal","url":"file:///usr/share/applications/org.kde.konsole.desktop","type":"application","launchCount":0},{"id":"app-settings","title":"System Settings","icon":"systemsettings","url":"file:///usr/share/applications/systemsettings.desktop","type":"application","launchCount":0},{"id":"dir-home","title":"Home","icon":"user-home","url":"file://$HOME","type":"directory","launchCount":0}]</default>
+    </entry>
+
+    <entry name="groupTitle" type="String">
+      <default>Applications</default>
+    </entry>
+
+    <entry name="showHeader" type="Bool">
+      <default>true</default>
+    </entry>
+
+    <entry name="panelIcon" type="String">
+      <default>com.keyaruga.applicationgroup</default>
+    </entry>
+
+    <entry name="showBadge" type="Bool">
+      <default>true</default>
+    </entry>
+
+    <entry name="enableFilter" type="Bool">
+      <default>true</default>
+    </entry>
+
+    <entry name="language" type="String">
+      <default>auto</default>
+    </entry>
+
+    <entry name="singleClickLaunch" type="Bool">
+      <default>true</default>
+    </entry>
+
+    <entry name="sortBy" type="String">
+      <default>manual</default>
+    </entry>
+  </group>
+
+  <group name="Appearance">
+    <entry name="viewMode" type="String">
+      <default>grid</default>
+    </entry>
+
+    <entry name="columnsMode" type="String">
+      <default>auto</default>
+    </entry>
+
+    <entry name="gridColumns" type="Int">
+      <default>4</default>
+      <min>0</min>
+      <max>8</max>
+    </entry>
+
+    <entry name="iconSize" type="String">
+      <default>medium</default>
+    </entry>
+
+    <entry name="backgroundStyle" type="String">
+      <default>card</default>
+    </entry>
+
+    <entry name="backgroundOpacity" type="Double">
+      <default>0.85</default>
+      <min>0.10</min>
+      <max>1.00</max>
+    </entry>
+
+    <entry name="borderRadius" type="Int">
+      <default>16</default>
+      <min>0</min>
+      <max>32</max>
+    </entry>
+
+    <entry name="showLabels" type="Bool">
+      <default>true</default>
+    </entry>
+
+    <entry name="fontSizeDelta" type="Int">
+      <default>0</default>
+      <min>-2</min>
+      <max>6</max>
+    </entry>
+  </group>
+
+</kcfg>
