@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="76" height="57" viewBox="0 0 76 57">
+  <path id="topleft" d="M 28,28 L 0,28 A 28,28 0 0 1 28,0 Z" fill="#000000"/>
+  <rect id="top" x="28" y="0" width="1" height="28" fill="#000000"/>
+  <path id="topright" d="M 29,28 L 29,0 A 28,28 0 0 1 57,28 Z" fill="#000000"/>
+  <rect id="left" x="0" y="28" width="28" height="1" fill="#000000"/>
+  <rect id="center" x="28" y="28" width="1" height="1" fill="#000000"/>
+  <rect id="right" x="29" y="28" width="28" height="1" fill="#000000"/>
+  <path id="bottomleft" d="M 28,29 L 28,57 A 28,28 0 0 1 0,29 Z" fill="#000000"/>
+  <rect id="bottom" x="28" y="29" width="1" height="28" fill="#000000"/>
+  <path id="bottomright" d="M 29,29 L 57,29 A 28,28 0 0 1 29,57 Z" fill="#000000"/>
+  <rect id="hint-top-margin" x="66" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-bottom-margin" x="67" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-left-margin" x="66" y="9" width="8" height="1" fill="none"/>
+  <rect id="hint-right-margin" x="66" y="0" width="8" height="1" fill="none"/>
+  <rect id="hint-stretch-borders" x="66" y="0" width="1" height="1" fill="none"/>
+</svg>
