@@ -42,6 +42,11 @@
     <entry name="sortBy" type="String">
       <default>manual</default>
     </entry>
+
+    <!-- Hidden channel for the unsaved config-dialog preview. Pages declare cfg_livePreview so the dialog can set it, and keep that property empty so Apply does not store the preview. -->
+    <entry name="livePreview" type="String">
+      <default></default>
+    </entry>
   </group>
 
   <group name="Appearance">

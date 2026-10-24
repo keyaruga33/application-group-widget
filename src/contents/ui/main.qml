@@ -14,8 +14,42 @@ import "lib/AppResolver.js" as AppResolver
 PlasmoidItem {
     id: root
 
+    readonly property bool configuring: Plasmoid.userConfiguring === true
+
+    // Same object every time there is nothing to preview, so bindings stay quiet.
+    readonly property var _emptyPreview: ({})
+
+    readonly property var previewValues: {
+        if (!root.configuring) {
+            return root._emptyPreview;
+        }
+        var raw = Plasmoid.configuration.livePreview;
+        if (!raw) {
+            return root._emptyPreview;
+        }
+        try {
+            var parsed = JSON.parse(String(raw));
+            if (parsed && parsed.values && typeof parsed.values === "object") {
+                return parsed.values;
+            }
+        } catch (e) {
+        }
+        return root._emptyPreview;
+    }
+
+    // Preview wins when the key is present, including false and 0.
+    // Reads previewValues and configuration[key] so callers re-evaluate.
+    function cfg(key) {
+        var values = root.previewValues;
+        var saved = Plasmoid.configuration[key];
+        if (values !== undefined && values !== null && values[key] !== undefined) {
+            return values[key];
+        }
+        return saved;
+    }
+
     readonly property string lang: {
-        var cfgLang = Plasmoid.configuration.language;
+        var cfgLang = root.cfg("language");
         if (cfgLang === "fa" || cfgLang === "en") {
             return cfgLang;
         }
@@ -27,9 +61,39 @@ PlasmoidItem {
 
     property bool isPinned: false
 
-    hideOnWindowDeactivate: !root.isPinned
+    hideOnWindowDeactivate: !root.isPinned && !root.configuring
+
+    onConfiguringChanged: {
+        if (root.configuring) {
+            if (Plasmoid.formFactor !== PlasmaCore.Types.Planar) {
+                root.expanded = true;
+            }
+        } else {
+            if (Plasmoid.configuration.livePreview) {
+                Plasmoid.configuration.livePreview = "";
+            }
+            if (!root.isPinned) {
+                root.expanded = false;
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        if (!root.configuring && Plasmoid.configuration.livePreview) {
+            Plasmoid.configuration.livePreview = "";
+        }
+    }
 
     property var itemsList: ItemsManager.parseItems(Plasmoid.configuration.items)
+
+    readonly property var displayedItems: {
+        var preview = root.previewValues;
+        var saved = root.itemsList;
+        if (preview && preview.items !== undefined) {
+            return ItemsManager.parseItems(preview.items);
+        }
+        return saved;
+    }
 
     readonly property Kicker.AppsModel appsModel: Kicker.AppsModel {
         id: internalAppsModel
@@ -201,9 +265,9 @@ PlasmoidItem {
         } catch (eFile2) {}
     }
 
-    Plasmoid.title: Plasmoid.configuration.groupTitle || Tr.t(root.lang, "appName")
-    toolTipMainText: Plasmoid.configuration.groupTitle || Tr.t(root.lang, "appName")
-    toolTipSubText: Tr.t(root.lang, "itemsCount", root.itemsList.length)
+    Plasmoid.title: root.cfg("groupTitle") || Tr.t(root.lang, "appName")
+    toolTipMainText: root.cfg("groupTitle") || Tr.t(root.lang, "appName")
+    toolTipSubText: Tr.t(root.lang, "itemsCount", root.displayedItems.length)
 
     preferredRepresentation: Plasmoid.formFactor === PlasmaCore.Types.Planar
         ? fullRepresentation
@@ -213,9 +277,9 @@ PlasmoidItem {
     switchHeight: Kirigami.Units.gridUnit * 15
 
     compactRepresentation: CompactRepresentation {
-        itemsCount: root.itemsList.length
-        panelIcon: Plasmoid.configuration.panelIcon
-        showBadge: Plasmoid.configuration.showBadge
+        itemsCount: root.displayedItems.length
+        panelIcon: root.cfg("panelIcon")
+        showBadge: root.cfg("showBadge")
         lang: root.lang
 
         onToggleRequested: root.expanded = !root.expanded
@@ -232,22 +296,22 @@ PlasmoidItem {
     }
 
     fullRepresentation: FullRepresentation {
-        rawItems: root.itemsList
+        rawItems: root.displayedItems
         systemAppsList: root.cachedSystemApps
-        groupTitle: Plasmoid.configuration.groupTitle
-        showHeader: Plasmoid.configuration.showHeader
-        enableFilter: Plasmoid.configuration.enableFilter
-        viewMode: Plasmoid.configuration.viewMode
-        columnsMode: Plasmoid.configuration.columnsMode
-        gridColumns: Plasmoid.configuration.gridColumns
-        iconSize: Plasmoid.configuration.iconSize
-        backgroundStyle: Plasmoid.configuration.backgroundStyle
-        backgroundOpacity: Plasmoid.configuration.backgroundOpacity
-        borderRadius: Plasmoid.configuration.borderRadius
-        showLabels: Plasmoid.configuration.showLabels
-        fontSizeDelta: Plasmoid.configuration.fontSizeDelta
-        sortBy: Plasmoid.configuration.sortBy
-        singleClickLaunch: Plasmoid.configuration.singleClickLaunch
+        groupTitle: root.cfg("groupTitle")
+        showHeader: root.cfg("showHeader")
+        enableFilter: root.cfg("enableFilter")
+        viewMode: root.cfg("viewMode")
+        columnsMode: root.cfg("columnsMode")
+        gridColumns: root.cfg("gridColumns")
+        iconSize: root.cfg("iconSize")
+        backgroundStyle: root.cfg("backgroundStyle")
+        backgroundOpacity: root.cfg("backgroundOpacity")
+        borderRadius: root.cfg("borderRadius")
+        showLabels: root.cfg("showLabels")
+        fontSizeDelta: root.cfg("fontSizeDelta")
+        sortBy: root.cfg("sortBy")
+        singleClickLaunch: root.cfg("singleClickLaunch")
         lang: root.lang
         isPinned: root.isPinned
 

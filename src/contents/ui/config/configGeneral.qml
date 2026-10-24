@@ -26,6 +26,9 @@ KCM.SimpleKCM {
     property bool cfg_singleClickLaunchDefault: true
     property string cfg_sortBy: "manual"
     property string cfg_sortByDefault: "manual"
+    // Declared so the dialog can set them. LivePreview keeps cfg_livePreview empty.
+    property string cfg_livePreview: ""
+    property string cfg_livePreviewDefault: ""
 
     readonly property string lang: {
         if (cfg_language === "fa" || cfg_language === "en")
@@ -37,6 +40,11 @@ KCM.SimpleKCM {
 
     LayoutMirroring.enabled: page.lang === "fa"
     LayoutMirroring.childrenInherit: true
+
+    LivePreview {
+        page: page
+        tag: "general"
+    }
 
     KIconThemes.IconDialog {
         id: panelIconDialog
