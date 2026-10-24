@@ -65,14 +65,14 @@ DragDrop.DropArea {
     }
 
     function isPopupSeparator(item) {
-        if (!item || item === fullRoot)
+        if (!item || item === fullRoot || item === QQC2.Overlay.overlay)
             return false;
         try {
             if (item.imagePath === "widgets/line")
                 return true;
             if (item.elementId === "horizontal-line" || item.elementId === "vertical-line")
                 return true;
-            if (item.z === 999)
+            if (item.z === 999 && item !== QQC2.Overlay.overlay)
                 return true;
         } catch (e) {
             return false;
@@ -118,7 +118,7 @@ DragDrop.DropArea {
             return;
         }
         var win = fullRoot.popupWindow;
-        if (!win) {
+        if (!win || !win.visible) {
             fullRoot._themeFrameHidden = false;
             fullRoot.finishCustomPopupFrame();
             return;
@@ -136,19 +136,41 @@ DragDrop.DropArea {
                 fullRoot.finishCustomPopupFrame();
                 return;
             }
+
+            // Ensure QQC2 overlay stays visible and active for menus and popups
+            if (QQC2.Overlay.overlay) {
+                QQC2.Overlay.overlay.opacity = 1;
+                QQC2.Overlay.overlay.visible = true;
+            }
+
             var hidden = false;
             var kids = content.children;
-            for (var i = 0; i < kids.length; i++) {
-                var child = kids[i];
-                if (!child || child === main)
-                    continue;
-                try {
-                    child.opacity = 0;
-                    child.visible = false;
-                    hidden = true;
-                } catch (e1) {
+            if (kids) {
+                for (var i = 0; i < kids.length; i++) {
+                    var child = kids[i];
+                    if (!child || child === main || child === QQC2.Overlay.overlay)
+                        continue;
+                    var isThemeFrame = (child.imagePath !== undefined && child.enabledBorders !== undefined);
+                    if (!isThemeFrame && child.children) {
+                        for (var j = 0; j < child.children.length; j++) {
+                            var innerChild = child.children[j];
+                            if (innerChild && innerChild.imagePath !== undefined && innerChild.enabledBorders !== undefined) {
+                                isThemeFrame = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (isThemeFrame) {
+                        try {
+                            child.opacity = 0;
+                            child.visible = false;
+                            hidden = true;
+                        } catch (e1) {
+                        }
+                    }
                 }
             }
+
             fullRoot.hideSeparatorsIn(main);
             if (fullRoot.parent && fullRoot.parent !== main)
                 fullRoot.hideSeparatorsIn(fullRoot.parent);
@@ -182,19 +204,27 @@ DragDrop.DropArea {
     property real _appliedDh: 0
 
     function findThemeFrameSvg(win) {
+        if (!win || !win.contentItem)
+            return null;
         try {
             var content = win.contentItem;
             var main = win.mainItem;
             var kids = content.children;
+            if (!kids)
+                return null;
             for (var i = 0; i < kids.length; i++) {
                 var bg = kids[i];
-                if (!bg || bg === main)
+                if (!bg || bg === main || bg === QQC2.Overlay.overlay)
                     continue;
+                if (bg.imagePath !== undefined && bg.enabledBorders !== undefined)
+                    return bg;
                 var inner = bg.children;
-                for (var j = 0; j < inner.length; j++) {
-                    var f = inner[j];
-                    if (f && f.imagePath !== undefined && f.enabledBorders !== undefined)
-                        return f;
+                if (inner) {
+                    for (var j = 0; j < inner.length; j++) {
+                        var f = inner[j];
+                        if (f && f.imagePath !== undefined && f.enabledBorders !== undefined)
+                            return f;
+                    }
                 }
             }
         } catch (e) {
@@ -396,35 +426,44 @@ DragDrop.DropArea {
     onBorderRadiusChanged: applyCornerRadii()
 
     onPopupWindowChanged: {
-        applyCustomPopupFrame();
-        Qt.callLater(applyCustomPopupFrame);
+        if (fullRoot.popupWindow && fullRoot.popupWindow.visible) {
+            applyCustomPopupFrame();
+            Qt.callLater(applyCustomPopupFrame);
+        }
     }
     onVisibleChanged: {
-        applyCustomPopupFrame();
-        if (visible)
+        if (visible && fullRoot.popupWindow && fullRoot.popupWindow.visible) {
+            applyCustomPopupFrame();
             Qt.callLater(applyCustomPopupFrame);
+        }
     }
     Component.onCompleted: {
         applyCornerRadii();
-        applyCustomPopupFrame();
-        Qt.callLater(applyCustomPopupFrame);
+        if (fullRoot.popupWindow && fullRoot.popupWindow.visible) {
+            applyCustomPopupFrame();
+            Qt.callLater(applyCustomPopupFrame);
+        }
     }
 
     Connections {
         target: fullRoot.popupWindow
         ignoreUnknownSignals: true
         function onPaddingChanged() {
-            fullRoot.applyCustomPopupFrame();
+            if (fullRoot.popupWindow && fullRoot.popupWindow.visible)
+                fullRoot.applyCustomPopupFrame();
         }
         function onBordersChanged() {
             // PopupPlasmaWindow resets the frame borders when it repositions.
-            fullRoot.applyRoundedMask();
-            Qt.callLater(fullRoot.applyRoundedMask);
+            if (fullRoot.popupWindow && fullRoot.popupWindow.visible) {
+                fullRoot.applyRoundedMask();
+                Qt.callLater(fullRoot.applyRoundedMask);
+            }
         }
         function onVisibleChanged() {
-            fullRoot.applyCustomPopupFrame();
-            if (fullRoot.popupWindow && fullRoot.popupWindow.visible)
+            if (fullRoot.popupWindow && fullRoot.popupWindow.visible) {
+                fullRoot.applyCustomPopupFrame();
                 Qt.callLater(fullRoot.applyCustomPopupFrame);
+            }
         }
     }
 
@@ -508,9 +547,10 @@ DragDrop.DropArea {
         }
 
         MouseArea {
+            id: bgMouseArea
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
-            onClicked: mouse => bgContextMenu.popup(this, mouse.x, mouse.y)
+            onClicked: mouse => bgContextMenu.popup(bgMouseArea, mouse.x, mouse.y)
         }
     }
 
@@ -634,6 +674,7 @@ DragDrop.DropArea {
                 model: fullRoot.visibleItems
 
                 delegate: ItemCard {
+                    id: gridCardDelegate
                     width: gridView.cellWidth
                     height: gridView.cellHeight
                     itemData: modelData
@@ -651,7 +692,7 @@ DragDrop.DropArea {
                         contextMenu.itemData = item;
                         contextMenu.itemIndex = idx;
                         contextMenu.totalCount = fullRoot.visibleItems.length;
-                        contextMenu.popup(this, mx, my);
+                        contextMenu.popup(gridCardDelegate, mx, my);
                     }
                     onDeleteRequested: (item, idx) => fullRoot.itemRemoved(item, idx)
                     onReorderRequested: (fromIdx, toIdx) => fullRoot.reorderItems(fromIdx, toIdx)
@@ -668,6 +709,7 @@ DragDrop.DropArea {
                 model: fullRoot.visibleItems
 
                 delegate: ItemCard {
+                    id: listCardDelegate
                     width: listView.width
                     itemData: modelData
                     itemIndex: index
@@ -684,7 +726,7 @@ DragDrop.DropArea {
                         contextMenu.itemData = item;
                         contextMenu.itemIndex = idx;
                         contextMenu.totalCount = fullRoot.visibleItems.length;
-                        contextMenu.popup(this, mx, my);
+                        contextMenu.popup(listCardDelegate, mx, my);
                     }
                     onDeleteRequested: (item, idx) => fullRoot.itemRemoved(item, idx)
                     onReorderRequested: (fromIdx, toIdx) => fullRoot.reorderItems(fromIdx, toIdx)
@@ -773,6 +815,10 @@ DragDrop.DropArea {
             icon.name: "configure"
             onTriggered: fullRoot.settingsRequested()
         }
+    }
+
+    function openAddItem() {
+        addItemModal.open();
     }
 
     AddItemModal {
