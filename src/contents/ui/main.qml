@@ -343,9 +343,14 @@ PlasmoidItem {
             text: Tr.t(root.lang, "addItem")
             icon.name: "list-add"
             onTriggered: {
-                if (!root.expanded && Plasmoid.formFactor !== PlasmaCore.Types.Planar) {
+                if (Plasmoid.formFactor !== PlasmaCore.Types.Planar) {
                     root.expanded = true;
                 }
+                Qt.callLater(() => {
+                    if (fullRepresentationItem && typeof fullRepresentationItem.openAddItem === "function") {
+                        fullRepresentationItem.openAddItem();
+                    }
+                });
             }
         }
     ]
