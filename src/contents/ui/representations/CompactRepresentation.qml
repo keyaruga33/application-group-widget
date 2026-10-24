@@ -101,10 +101,4 @@ DragDrop.DropArea {
         cursorShape: Qt.PointingHandCursor
         onClicked: compactRoot.toggleRequested()
     }
-
-    QQC2.ToolTip {
-        visible: mouseArea.containsMouse && !compactRoot.containsDrag
-        delay: Kirigami.Units.toolTipDelay
-        text: Tr.t(compactRoot.lang, "appName") + " (" + Tr.t(compactRoot.lang, "itemsCount", compactRoot.itemsCount) + ")"
-    }
 }

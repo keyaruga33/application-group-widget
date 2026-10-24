@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="10" viewBox="0 0 22 10">
+  <rect id="topleft" x="0" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="top" x="1" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="topright" x="2" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="left" x="0" y="1" width="1" height="1" fill="#000000"/>
+  <rect id="center" x="1" y="1" width="1" height="1" fill="#000000"/>
+  <rect id="right" x="2" y="1" width="1" height="1" fill="#000000"/>
+  <rect id="bottomleft" x="0" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="bottom" x="1" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="bottomright" x="2" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="hint-top-margin" x="12" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-bottom-margin" x="13" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-left-margin" x="12" y="9" width="8" height="1" fill="none"/>
+  <rect id="hint-right-margin" x="12" y="0" width="8" height="1" fill="none"/>
+  <rect id="hint-stretch-borders" x="12" y="0" width="1" height="1" fill="none"/>
+</svg>
