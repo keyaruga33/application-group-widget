@@ -21,8 +21,11 @@ QQC2.Popup {
     dim: true
     closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutside
 
-    implicitWidth: Math.min(parent ? parent.width * 0.95 : 440, Kirigami.Units.gridUnit * 25)
-    implicitHeight: Math.min(parent ? parent.height * 0.90 : 450, Kirigami.Units.gridUnit * 24)
+    // Fit inside the popup however small it is; the body scrolls.
+    margins: Kirigami.Units.smallSpacing
+    width: Math.max(0, Math.min((parent ? parent.width : Kirigami.Units.gridUnit * 25) - 2 * Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit * 25))
+    height: Math.max(0, Math.min((parent ? parent.height : Kirigami.Units.gridUnit * 24) - 2 * Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit * 24))
+    readonly property bool compact: width < Kirigami.Units.gridUnit * 18
     anchors.centerIn: parent
 
     background: Rectangle {
@@ -52,7 +55,7 @@ QQC2.Popup {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Kirigami.Units.largeSpacing
+        anchors.margins: root.compact ? 0 : Kirigami.Units.smallSpacing
         spacing: Kirigami.Units.smallSpacing
 
         RowLayout {
@@ -64,6 +67,7 @@ QQC2.Popup {
                 color: Kirigami.Theme.textColor
                 font.bold: true
                 Layout.fillWidth: true
+                elide: Text.ElideRight
             }
 
             Rectangle {
@@ -90,52 +94,66 @@ QQC2.Popup {
             }
         }
 
-        QQC2.Label {
-            text: Tr.t(root.lang, "fieldName")
-            font.bold: true
-        }
-        QQC2.TextField {
-            id: editTitleField
+        QQC2.ScrollView {
+            id: editScroll
             Layout.fillWidth: true
-        }
+            Layout.fillHeight: true
+            clip: true
+            contentWidth: availableWidth
+            QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
 
-        QQC2.Label {
-            text: Tr.t(root.lang, "fieldIcon")
-            font.bold: true
-        }
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
+            ColumnLayout {
+                width: editScroll.availableWidth
+                spacing: Kirigami.Units.smallSpacing
 
-            QQC2.TextField {
-                id: editIconField
-                Layout.fillWidth: true
+                QQC2.Label {
+                    text: Tr.t(root.lang, "fieldName")
+                    font.bold: true
+                }
+                QQC2.TextField {
+                    id: editTitleField
+                    Layout.fillWidth: true
+                }
+
+                QQC2.Label {
+                    text: Tr.t(root.lang, "fieldIcon")
+                    font.bold: true
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+
+                    QQC2.TextField {
+                        id: editIconField
+                        Layout.fillWidth: true
+                    }
+
+                    Kirigami.Icon {
+                        implicitWidth: Kirigami.Units.iconSizes.medium
+                        implicitHeight: Kirigami.Units.iconSizes.medium
+                        source: editIconField.text || "application-x-executable"
+                    }
+
+                    QQC2.Button {
+                        icon.name: "preferences-desktop-icons"
+                        text: Tr.t(root.lang, "chooseIconKde")
+                        display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                        QQC2.ToolTip.text: text
+                        QQC2.ToolTip.visible: root.compact && hovered
+                        onClicked: editIconDialog.open()
+                    }
+                }
+
+                QQC2.Label {
+                    text: Tr.t(root.lang, "fieldUrl")
+                    font.bold: true
+                }
+                QQC2.TextField {
+                    id: editUrlField
+                    Layout.fillWidth: true
+                }
             }
-
-            Kirigami.Icon {
-                implicitWidth: Kirigami.Units.iconSizes.medium
-                implicitHeight: Kirigami.Units.iconSizes.medium
-                source: editIconField.text || "application-x-executable"
-            }
-
-            QQC2.Button {
-                icon.name: "preferences-desktop-icons"
-                text: Tr.t(root.lang, "chooseIconKde")
-                onClicked: editIconDialog.open()
-            }
         }
-
-        QQC2.Label {
-            text: Tr.t(root.lang, "fieldUrl")
-            font.bold: true
-        }
-        QQC2.TextField {
-            id: editUrlField
-            Layout.fillWidth: true
-        }
-
-
-        Item { Layout.fillHeight: true }
 
         RowLayout {
             Layout.fillWidth: true
@@ -144,6 +162,9 @@ QQC2.Popup {
             QQC2.Button {
                 text: Tr.t(root.lang, "delete")
                 icon.name: "edit-delete"
+                display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: root.compact && hovered
                 onClicked: {
                     root.itemDeleted(root.itemData, root.itemIndex);
                     root.close();
@@ -154,12 +175,19 @@ QQC2.Popup {
 
             QQC2.Button {
                 text: Tr.t(root.lang, "cancel")
+                icon.name: "dialog-cancel"
+                display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: root.compact && hovered
                 onClicked: root.close()
             }
 
             QQC2.Button {
                 text: Tr.t(root.lang, "save")
                 icon.name: "dialog-ok"
+                display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                QQC2.ToolTip.text: text
+                QQC2.ToolTip.visible: root.compact && hovered
                 enabled: editTitleField.text.trim().length > 0
                 onClicked: {
                     var updated = Object.assign({}, root.itemData, {

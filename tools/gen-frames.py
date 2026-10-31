@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Generate rounded FrameSvg files used only as the popup's blur/contrast mask.
+"""Generate FrameSvg files used as the popup's blur/contrast mask.
 
 KWin's blur/contrast region for a Plasma popup follows the alpha mask of the
-popup's FrameSvg. Pointing that (hidden) FrameSvg at one of these files makes
-the region match the widget's own rounded background.
+popup's FrameSvg. The rounded files match a rounded popup, but that region
+covers the whole window, so background contrast paints a solid panel. The
+applet installs noblur.svg instead (a few corner pixels). The rounded files
+stay here so the mask radius assets are still reproducible.
 """
 import os
 
@@ -52,3 +54,51 @@ os.makedirs(OUT, exist_ok=True)
 for r in range(0, 33, 2):
     with open(os.path.join(OUT, f"rounded-{r}.svg"), "w") as fh:
         fh.write(svg(r))
+
+
+# No-blur mask: every frame piece is transparent except one pixel in each
+# corner piece. KWin treats an empty region as "whole window", so a tiny
+# non-empty region is how we effectively switch blur/contrast off.
+# noblur-b.svg is a twin with the same hint margins. FullRepresentation swaps
+# to it to force KSvg maskChanged after the popup is mapped.
+NOBLUR = '''<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="10" viewBox="0 0 22 10">
+  <rect id="topleft" x="0" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="top" x="1" y="0" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="topright" x="2" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="left" x="0" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="center" x="1" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="right" x="2" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="bottomleft" x="0" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="bottom" x="1" y="2" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="bottomright" x="2" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="hint-top-margin" x="12" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-bottom-margin" x="13" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-left-margin" x="12" y="9" width="8" height="1" fill="none"/>
+  <rect id="hint-right-margin" x="12" y="0" width="8" height="1" fill="none"/>
+  <rect id="hint-stretch-borders" x="12" y="0" width="1" height="1" fill="none"/>
+</svg>
+'''
+NOBLUR_B = '''<?xml version="1.0" encoding="UTF-8"?>
+<!-- Twin mask with identical hint margins. FullRepresentation swaps to this file to force KSvg maskChanged after the popup is mapped. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="22" height="10" viewBox="0 0 22 10">
+  <rect id="topleft" x="0" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="top" x="1" y="0" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="topright" x="2" y="0" width="1" height="1" fill="#000000"/>
+  <rect id="left" x="0" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="center" x="1" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="right" x="2" y="1" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="bottomleft" x="0" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="bottom" x="1" y="2" width="1" height="1" fill="#000000" fill-opacity="0"/>
+  <rect id="bottomright" x="2" y="2" width="1" height="1" fill="#000000"/>
+  <rect id="hint-top-margin" x="12" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-bottom-margin" x="13" y="0" width="1" height="8" fill="none"/>
+  <rect id="hint-left-margin" x="12" y="9" width="8" height="1" fill="none"/>
+  <rect id="hint-right-margin" x="12" y="0" width="8" height="1" fill="none"/>
+  <rect id="hint-stretch-borders" x="12" y="0" width="1" height="1" fill="none"/>
+</svg>
+'''
+with open(os.path.join(OUT, "noblur.svg"), "w") as fh:
+    fh.write(NOBLUR)
+with open(os.path.join(OUT, "noblur-b.svg"), "w") as fh:
+    fh.write(NOBLUR_B)

@@ -321,6 +321,10 @@ PlasmoidItem {
         onItemRemoved: (item, idx) => root.removeItem(item, idx)
         onItemMoved: (fromIdx, toIdx) => root.moveItem(fromIdx, toIdx)
         onPinToggled: root.isPinned = !root.isPinned
+        onDismissRequested: {
+            if (!root.isPinned && !root.configuring)
+                root.expanded = false;
+        }
         onSettingsRequested: {
             if (Plasmoid.internalAction("configure")) {
                 Plasmoid.internalAction("configure").trigger();
