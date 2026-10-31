@@ -67,6 +67,10 @@ PlasmoidItem {
         if (root.configuring) {
             if (Plasmoid.formFactor !== PlasmaCore.Types.Planar) {
                 root.expanded = true;
+                // Opening Appearance on a drawer that is already expanded
+                // does not emit expandedChanged, and hideOnWindowDeactivate
+                // stays false for the whole time the dialog is open.
+                Qt.callLater(root.closeOtherApplicationGroups);
             }
         } else {
             if (Plasmoid.configuration.livePreview) {
@@ -76,6 +80,81 @@ PlasmoidItem {
                 root.expanded = false;
             }
         }
+    }
+
+    // Plasma 6 keeps expanded on the PlasmoidItem, not on Plasma::Applet.
+    // The panel walks Containment.applets and clears expanded when it enters
+    // edit mode; from an applet that list has no expanded property, so resolve
+    // each sibling through the containment's itemFor() (ContainmentItem).
+    // AppletPopup only closes itself from focusOut. On Wayland a second
+    // applet popup often never takes activation (CompactApplet's
+    // requestActivate() fails), so the first drawer stays up underneath.
+    // Opening one Application Group closes the other instances on this panel.
+    //
+    // An open Appearance dialog does not keep that sibling's popup up.
+    // userConfiguring only means the config window is open; the popup is
+    // still just expanded. Leaving the sibling expanded keeps it on screen,
+    // because hideOnWindowDeactivate is false while the dialog is open.
+    function closeOtherApplicationGroups() {
+        if (!root.expanded || Plasmoid.formFactor === PlasmaCore.Types.Planar)
+            return;
+        var containment = Plasmoid.containment;
+        if (!containment || !containment.applets)
+            return;
+
+        var host = root.parent;
+        while (host) {
+            if (typeof host.itemFor === "function") {
+                var selfItem = null;
+                try {
+                    selfItem = host.itemFor(Plasmoid);
+                } catch (eHost) {
+                    selfItem = null;
+                }
+                if (selfItem === root)
+                    break;
+            }
+            host = host.parent;
+        }
+        if (!host || typeof host.itemFor !== "function")
+            return;
+
+        var mine = String(Plasmoid.pluginName || "");
+        var myId = Plasmoid.id;
+        var applets = containment.applets;
+        for (var i = 0; i < applets.length; i++) {
+            var applet = applets[i];
+            if (!applet)
+                continue;
+            var name = "";
+            var appletId = -1;
+            try {
+                name = String(applet.pluginName || "");
+                appletId = applet.id;
+            } catch (eApplet) {
+                continue;
+            }
+            if (name !== mine || appletId === myId)
+                continue;
+            var item = null;
+            try {
+                item = host.itemFor(applet);
+            } catch (eItem) {
+                item = null;
+            }
+            if (!item || item === root)
+                continue;
+            try {
+                if (item.expanded)
+                    item.expanded = false;
+            } catch (eExpanded) {
+            }
+        }
+    }
+
+    onExpandedChanged: {
+        if (root.expanded)
+            Qt.callLater(root.closeOtherApplicationGroups);
     }
 
     Component.onCompleted: {
@@ -321,6 +400,10 @@ PlasmoidItem {
         onItemRemoved: (item, idx) => root.removeItem(item, idx)
         onItemMoved: (fromIdx, toIdx) => root.moveItem(fromIdx, toIdx)
         onPinToggled: root.isPinned = !root.isPinned
+        onDismissRequested: {
+            if (!root.isPinned && !root.configuring)
+                root.expanded = false;
+        }
         onSettingsRequested: {
             if (Plasmoid.internalAction("configure")) {
                 Plasmoid.internalAction("configure").trigger();

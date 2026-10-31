@@ -19,8 +19,11 @@ QQC2.Popup {
     dim: true
     closePolicy: QQC2.Popup.CloseOnEscape | QQC2.Popup.CloseOnPressOutside
 
-    implicitWidth: Math.min(parent ? parent.width * 0.95 : 440, Kirigami.Units.gridUnit * 25)
-    implicitHeight: Math.min(parent ? parent.height * 0.90 : 500, Kirigami.Units.gridUnit * 27)
+    // Fit inside the popup however small it is; the body scrolls.
+    margins: Kirigami.Units.smallSpacing
+    width: Math.max(0, Math.min((parent ? parent.width : Kirigami.Units.gridUnit * 25) - 2 * Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit * 25))
+    height: Math.max(0, Math.min((parent ? parent.height : Kirigami.Units.gridUnit * 27) - 2 * Kirigami.Units.smallSpacing, Kirigami.Units.gridUnit * 27))
+    readonly property bool compact: width < Kirigami.Units.gridUnit * 18
 
     anchors.centerIn: parent
 
@@ -43,7 +46,7 @@ QQC2.Popup {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: Kirigami.Units.largeSpacing
+        anchors.margins: root.compact ? 0 : Kirigami.Units.smallSpacing
         spacing: Kirigami.Units.smallSpacing
 
         RowLayout {
@@ -55,6 +58,7 @@ QQC2.Popup {
                 color: Kirigami.Theme.textColor
                 font.bold: true
                 Layout.fillWidth: true
+                elide: Text.ElideRight
             }
 
             Rectangle {
@@ -86,10 +90,13 @@ QQC2.Popup {
             Layout.fillWidth: true
 
             QQC2.TabButton {
+                // Split the bar evenly so both tabs stay visible in a narrow popup.
+                width: tabBar.width / 2
                 text: Tr.t(root.lang, "tabSystemApps")
             }
 
             QQC2.TabButton {
+                width: tabBar.width / 2
                 text: Tr.t(root.lang, "tabCustomItem")
             }
         }
@@ -205,13 +212,16 @@ QQC2.Popup {
         }
 
         QQC2.ScrollView {
+            id: customScroll
             visible: tabBar.currentIndex === 1
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+            contentWidth: availableWidth
+            QQC2.ScrollBar.horizontal.policy: QQC2.ScrollBar.AlwaysOff
 
             ColumnLayout {
-                width: parent.width
+                width: customScroll.availableWidth
                 spacing: Kirigami.Units.smallSpacing
 
                 QQC2.Label {
@@ -257,6 +267,9 @@ QQC2.Popup {
                     QQC2.Button {
                         icon.name: "preferences-desktop-icons"
                         text: Tr.t(root.lang, "chooseIconKde")
+                        display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                        QQC2.ToolTip.text: text
+                        QQC2.ToolTip.visible: root.compact && hovered
                         onClicked: nativeIconDialog.open()
                     }
                 }
@@ -310,12 +323,19 @@ QQC2.Popup {
 
                     QQC2.Button {
                         text: Tr.t(root.lang, "cancel")
+                        icon.name: "dialog-cancel"
+                        display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                        QQC2.ToolTip.text: text
+                        QQC2.ToolTip.visible: root.compact && hovered
                         onClicked: root.close()
                     }
 
                     QQC2.Button {
                         text: Tr.t(root.lang, "save")
                         icon.name: "dialog-ok"
+                        display: root.compact ? QQC2.AbstractButton.IconOnly : QQC2.AbstractButton.TextBesideIcon
+                        QQC2.ToolTip.text: text
+                        QQC2.ToolTip.visible: root.compact && hovered
                         enabled: customTitleField.text.trim().length > 0 && customUrlField.text.trim().length > 0
                         onClicked: {
                             var isDir = customUrlField.text.indexOf("http") !== 0 && customUrlField.text.indexOf(".") === -1;
